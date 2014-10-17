@@ -101,7 +101,8 @@ class Mobile_WS_SyncModuleRecords extends Mobile_WS_SaveRecord {
 
 			foreach($activeResult as $recordValues) {
 				$this->resolveRecordValues($recordValues, $current_user);
-				$transformedRecord = $this->transformRecordWithGrouping($recordValues, $module);
+				$transformedRecord = $this->transformRecordWithGrouping($recordValues,
+                    Mobile_WS_Utils::detectModulenameFromRecordId($recordValues['id'])); //GM 2014-10-17 may take longer, but this way the record is transformed correctly whether it's an Event or a Task
 				// Update entity fieldnames
 				$transformedRecord['labelFields'] = $this->cachedEntityFieldnames($module);
 				$resolvedModifiedRecords[] = $transformedRecord;

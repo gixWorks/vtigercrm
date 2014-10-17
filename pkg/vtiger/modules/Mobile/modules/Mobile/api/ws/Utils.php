@@ -107,13 +107,24 @@ class Mobile_WS_Utils {
 		}
 		return $columnnames;
 	}
-	
+
+    static $detectModulenameFromRecordIdCache = array(); //GM 2014-10-17 Introduced Cache Management for detectModulenameFromRecordId
+
 	static function detectModulenameFromRecordId($wsrecordid) {
-		global $adb;
 		$idComponents = vtws_getIdComponents($wsrecordid);
+        if(isset(self::$detectModulenameFromRecordIdCache[$idComponents[0]]))
+        {
+            //Cache hit? Return the value
+            return self::$detectModulenameFromRecordIdCache[$idComponents[0]];
+        }
+        global $adb;
 		$result = $adb->pquery("SELECT name FROM vtiger_ws_entity WHERE id=?", array($idComponents[0]));
 		if($result && $adb->num_rows($result)) {
-			return $adb->query_result($result, 0, 'name');
+            $returnVal = $adb->query_result($result, 0, 'name');
+            //set cache
+            self::$detectModulenameFromRecordIdCache[$idComponents[0]] = $returnVal;
+            //return requested value
+			return $returnVal;
 		}
 		return false;
 	}
@@ -150,7 +161,8 @@ class Mobile_WS_Utils {
 	static function gatherModuleFieldGroupInfo($module) {
 		global $adb;
 		
-		if($module == 'Events') $module = 'Calendar';
+		//if($module == 'Events') $module = 'Calendar'; //GM 2014-10-16
+        //This fixes the problem of missing custom fields in syncModuleRecords called with 'Calendar' as Module parameter
 		
 		// Cache hit?
 		if(isset(self::$gatherModuleFieldGroupInfoCache[$module])) {
